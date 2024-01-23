@@ -14,7 +14,10 @@ Display:
         path=/status
 """
 
+
+import pymongo
 from pymongo import MongoClient
+
 
 def log_stats(mongo_collection):
     """
