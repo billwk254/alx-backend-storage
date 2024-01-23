@@ -1,0 +1,3 @@
+//Script to list all documents in the school folder
+
+db.school.find()
