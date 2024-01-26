@@ -6,7 +6,8 @@ Module for Cache class.
 
 import redis
 import uuid
-from typing import Union, Callable, Optional
+from typing import Union, Callable
+from functools import wraps
 
 
 class Cache:
@@ -35,7 +36,7 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Optional[Callable] = None) -> Union[str, bytes, int, float, None]:
+    def get(self, key: str, fn: Callable = None) -> Union[str, bytes, int, float, None]:
         """
         Retrieve data from Redis using the provided key and optionally apply a conversion function.
 
@@ -77,3 +78,23 @@ class Cache:
         """
         return self.get(key, fn=int)
 
+
+def count_calls(method: Callable) -> Callable:
+    """
+    Decorator to count the number of times a method is called.
+
+    Args:
+        method: The method to be decorated.
+
+    Returns:
+        Callable: The decorated method.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        key = method.__qualname__
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
+    return wrapper
+
+# Decorate Cache.store with count_calls
+Cache.store = count_calls(Cache.store)
